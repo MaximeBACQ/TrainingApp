@@ -9,9 +9,45 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import threading
+from pynput import keyboard, mouse
+
 
 
 class Ui_MainWindow(object):
+    
+    def keyPressed(key):
+        try:
+            print(f"Key down: {key.char}")
+        except AttributeError:
+            if(key==keyboard.Key.esc):
+                return False
+            print(f"Special key down: {key}")
+
+    def keyReleased(key):
+        print(f"Key up: {key}")
+
+    def capture_inputs(self, duration):
+        def stop_listener():
+            listener.stop()
+            print("Capture thread ended.")
+        # with keyboard.Listener(
+        #         on_press=keyPressed   #on_press gives the parameter, no need for parenthesis when writing keyPressed
+        #         #,on_release=keyReleased
+        #         ) as listener:
+        #   listener.join()  #join blocks the program until pynput is done listening
+        listener = keyboard.Listener(
+            on_press=self.keyPressed,
+            on_release=self.keyReleased
+        )
+        listener.start()
+
+        timer = threading.Timer(duration, stop_listener)
+
+        timer.start()
+
+        listener.join()
+    
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1198, 787)
@@ -52,6 +88,8 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        self.actionNew.connect
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
