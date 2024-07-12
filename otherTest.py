@@ -49,6 +49,15 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to create file:\n{str(e)}")
 
+    def displayJsonContent(self, filePath):
+        try:
+            with open(filePath, 'r') as file:
+                data = json.load(file)
+                json_str = json.dumps(data, indent=4)
+                self.textEditZone.setPlainText(json_str)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to load JSON file:\n{str(e)}")
+
     def open_file_search(self):
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(self, "Select File", "", "JSON Files (*.json);;All Files (*)", options=options)
@@ -61,15 +70,6 @@ class MainWindow(QMainWindow):
     def populateAppComboBox(self):
         apps = self.get_installed_apps()
         self.appComboBox.addItems(apps)
-
-    def displayJsonContent(self, filePath):
-        try:
-            with open(filePath, 'r') as file:
-                data = json.load(file)
-                json_str = json.dumps(data, indent=4)
-                self.textEditZone.setPlainText(json_str)
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to load JSON file:\n{str(e)}")
 
     def get_installed_apps(self):
         apps = []
