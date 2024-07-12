@@ -9,6 +9,7 @@ import sys
 import time
 import threading
 import json
+import winreg
 
 currentActions = []
 
@@ -93,7 +94,7 @@ def capture_inputs(duration):
     listener.join()
     
 def replay_inputs():
-    with open('actions.json', 'r') as file:
+    with open('actions/actions.json', 'r') as file:
         currentActions = json.load(file)
 
     for action in currentActions:
