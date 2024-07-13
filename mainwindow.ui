@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab1">
      <attribute name="title">
@@ -99,6 +99,37 @@ p, li { white-space: pre-wrap; }
        <string>Capture Inputs</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="refreshButton">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>580</y>
+        <width>91</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Refresh preview</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="recordingLabel">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>620</y>
+        <width>381</width>
+        <height>161</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>22</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Not currently recording inputs</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab2">
      <attribute name="title">
@@ -117,7 +148,7 @@ p, li { white-space: pre-wrap; }
        <string>Select a file</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="broweButton2">
+     <widget class="QPushButton" name="browseButton2">
       <property name="geometry">
        <rect>
         <x>270</x>

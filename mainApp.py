@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QPushButton, 
 import sys
 import winreg
 import json
+from inputsLogic import InputHandler
 
 
 class MainWindow(QMainWindow):
@@ -10,13 +11,17 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         uic.loadUi('mainwindow.ui', self)
 
+        self.inputHandler = InputHandler()._instance
         # Tab 1 widgets
         self.browseButton1 = self.findChild(QPushButton, 'browseButton1')
         self.filePathLineEdit1 = self.findChild(QLineEdit, 'filePathLineEdit1')
         self.captureButton = self.findChild(QPushButton, 'captureButton')
         self.createFileButton = self.findChild(QPushButton, 'createFileButton')
         self.textEditZone = self.findChild(QTextEdit, 'textEditZone')
+        self.recordingLabel = self.findChild(QLabel, "recordingLabel")
+        self.recordingLabel.setVisible(False)
         self.filePathLineEdit1.setReadOnly(True)
+        self.textEditZone.setReadOnly(True)
 
         # Tab 2 widgets
         self.browseButton2 = self.findChild(QPushButton, 'browseButton2')
@@ -26,15 +31,25 @@ class MainWindow(QMainWindow):
 
         self.browseButton1.clicked.connect(self.open_file_search)
         self.captureButton.clicked.connect(self.capture_button_click)
+        self.createFileButton.clicked.connect(self.create_new_file)
+
+        self.inputHandler.started.connect(self.startRecording)
+        self.inputHandler.finished.connect(lambda: self.recordingLabel.setText("Stopped recording"))
+
         self.populateAppComboBox()
 
-    def capture_button_click(self):
-        if self.filePathLineEdit1.text() == "Select a file":
-            reply = QMessageBox.information(self, "Popup","Doing so will create a new file, please choose a destination", QMessageBox.Cancel|QMessageBox.Ok, QMessageBox.Cancel)
-            if reply == QMessageBox.Ok:
-                self.create_new_file()
-        else:
-            QMessageBox.critical(self, "Popup","Doing so will delete everything that's in the selected file, do you want to ignore or cancel the delete ?", QMessageBox.Ignore|QMessageBox.Cancel, QMessageBox.Cancel)
+
+    def startRecording(self):
+        self.recordingLabel.setText("Currently recording") 
+        self.recordingLabel.setVisible(True)
+
+    def file_is_empty(self):
+        file_path = self.filePathLineEdit1.text()
+        if file_path:
+            with open(file_path, 'r') as file:
+                content = file.read()
+                return len(content.strip()) == 0
+        return True
 
     def create_new_file(self):
         options = QFileDialog.Options()
@@ -48,6 +63,20 @@ class MainWindow(QMainWindow):
                 #self.displayJsonContent(filePath)
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to create file:\n{str(e)}")
+
+    def capture_button_click(self):
+        if self.filePathLineEdit1.text() == "Select a file":
+            reply = QMessageBox.information(self, "Popup","Doing so will create a new file, please choose a destination", QMessageBox.Cancel|QMessageBox.Ok, QMessageBox.Cancel)
+            if reply == QMessageBox.Ok:
+                self.create_new_file()
+        else:
+            if not self.file_is_empty():
+                reply = QMessageBox.critical(self, "Popup","You must select an empty file", QMessageBox.Ok)
+            else:
+                self.recordingLabel.setVisible(True)
+                self.inputHandler.capture_inputs(5, self.filePathLineEdit1.text())
+                self.displayJsonContent(self.filePathLineEdit1.text())
+                self.recordingLabel.setVisible(False)
 
     def displayJsonContent(self, filePath):
         try:
