@@ -130,6 +130,19 @@ p, li { white-space: pre-wrap; }
        <string>Not currently recording inputs</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="emptyButton">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>630</y>
+        <width>111</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Empty Current File</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab2">
      <attribute name="title">

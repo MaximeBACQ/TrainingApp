@@ -19,6 +19,8 @@ class MainWindow(QMainWindow):
         self.createFileButton = self.findChild(QPushButton, 'createFileButton')
         self.textEditZone = self.findChild(QTextEdit, 'textEditZone')
         self.recordingLabel = self.findChild(QLabel, "recordingLabel")
+        self.emptyButton = self.findChild(QPushButton, 'emptyButton')
+        self.refreshButton = self.findChild(QPushButton, 'refreshButton')
         self.recordingLabel.setVisible(False)
         self.filePathLineEdit1.setReadOnly(True)
         self.textEditZone.setReadOnly(True)
@@ -32,12 +34,25 @@ class MainWindow(QMainWindow):
         self.browseButton1.clicked.connect(self.open_file_search)
         self.captureButton.clicked.connect(self.capture_button_click)
         self.createFileButton.clicked.connect(self.create_new_file)
+        self.emptyButton.clicked.connect(self.empty_file)
+        self.refreshButton.clicked.connect(self.refreshFile)
 
         self.inputHandler.started.connect(self.startRecording)
         self.inputHandler.finished.connect(lambda: self.recordingLabel.setText("Stopped recording"))
 
         self.populateAppComboBox()
 
+
+    def refreshFile(self):
+        if self.filePathLineEdit1.text() == "Select a file":
+            QMessageBox.information(self, "Error", "Cannot refresh if no file is currently selected")
+        else:
+            print(self.file_is_empty())
+            if self.file_is_empty():
+                QMessageBox.information(self, "No preview available", "This file is empty")
+            else:
+                self.displayJsonContent(self.filePathLineEdit1.text())
+                QMessageBox.information(self, "Information", "File preview refreshed")
 
     def startRecording(self):
         self.recordingLabel.setText("Currently recording") 
@@ -47,8 +62,8 @@ class MainWindow(QMainWindow):
         file_path = self.filePathLineEdit1.text()
         if file_path:
             with open(file_path, 'r') as file:
-                content = file.read()
-                return len(content.strip()) == 0
+                content = file.read().strip() #strip removes every whitespace at the beginning and end of the file
+                return content == "" or  content == "{}"
         return True
 
     def create_new_file(self):
@@ -92,9 +107,26 @@ class MainWindow(QMainWindow):
         filePath, _ = QFileDialog.getOpenFileName(self, "Select File", "", "JSON Files (*.json);;All Files (*)", options=options)
         print(filePath)
         if filePath:
-            print("filepath ok")
             self.filePathLineEdit1.setText(filePath)
-            self.displayJsonContent(filePath)
+            if not self.file_is_empty:
+                self.displayJsonContent(filePath)
+
+    def empty_file(self):
+        file_path = self.filePathLineEdit1.text()
+
+        if file_path == "Select a file":
+            QMessageBox.information(self, "Error", "No file selected to empty.")
+            return
+        elif self.file_is_empty():
+            QMessageBox.information(self, "Already empty", "This file is already empty")
+            return
+        try:
+            with open(file_path, 'w') as file:
+                file.write("")
+            QMessageBox.information(self, "Success", "JSON file has been emptied.")
+            self.displayJsonContent(file_path)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to empty JSON file:\n{str(e)}")
 
     def populateAppComboBox(self):
         apps = self.get_installed_apps()
