@@ -12,6 +12,8 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         uic.loadUi('mainwindow.ui', self)
 
+        self.currentReplayAppPath = ""
+
         self.inputHandler = InputHandler()._instance
         # Tab 1 widgets
         self.browseButton1 = self.findChild(QPushButton, 'browseButton1')
@@ -37,7 +39,6 @@ class MainWindow(QMainWindow):
         self.filePathLineEdit2.setReadOnly(True)
 
 
-
         self.browseButton1.clicked.connect(lambda: self.open_file_search(self.filePathLineEdit1))
         self.browseButton2.clicked.connect(lambda: self.open_file_search(self.filePathLineEdit2))
         self.browseButton3.clicked.connect(self.open_app_search)
@@ -45,6 +46,7 @@ class MainWindow(QMainWindow):
         self.createFileButton.clicked.connect(self.create_new_file)
         self.emptyButton.clicked.connect(self.empty_file)
         self.refreshButton.clicked.connect(self.refreshFile)
+        self.replayButton.clicked.connect(self.replay_button_clicked)
 
         self.inputHandler.started.connect(self.startRecording)
         self.inputHandler.finished.connect(lambda: self.recordingLabel.setText("Stopped recording"))
@@ -115,6 +117,7 @@ class MainWindow(QMainWindow):
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(self, "Select Application", "", "Executable Files (*.exe);", options=options)
         if filePath:
+            self.currentReplayAppPath = filePath
             app_name = os.path.basename(filePath)
             self.appComboBox.addItem(app_name)
             self.appComboBox.setCurrentText(app_name)
@@ -173,8 +176,12 @@ class MainWindow(QMainWindow):
         print(apps)
         return apps
     
-    def replay_inputs(self):
-        return
+    def replay_button_clicked(self):
+        app_name = self.appComboBox.currentText()
+        if self.currentReplayAppPath != "":
+            self.inputHandler.replay_inputs(self.filePathLineEdit2.text(), self.currentReplayAppPath)
+        else:
+            QMessageBox.critical(self, "Error", "Application path not found")
     
 
 

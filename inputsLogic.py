@@ -1,9 +1,11 @@
 import json
 import threading
+import autoit
 from pynput import keyboard
 import pyautogui
 from pynput.keyboard import Key
 from PyQt5.QtCore import QObject, pyqtSignal
+import time
 
 #I've used the singleton design pattern for this class so that there are never two running inputhandlers
 class InputHandler(QObject):
@@ -80,12 +82,25 @@ class InputHandler(QObject):
 
         listener.join()
 
-    def replay_inputs(self):
-        with open('actions.json', 'r') as file:
+    def replay_inputs(self, actionsFile, replayApp):
+        try:
+            autoit.run(replayApp)
+            print(f"Opening application: {replayApp}")
+        except Exception as e:
+            print(f"Failed to open application: {e}")
+            return
+        
+        time.sleep(4)
+
+        print('opening ok')
+        with open(actionsFile, 'r') as file:
             self.currentActions = json.load(file)
+        print(self.currentActions)
 
         for action in self.currentActions:
             device, details = action
+            print(device+"device")
+            print(details+"details")
             if device == "keyboard":
                 if details in self.specialkey_mapping:
                     pyautogui.press(self.specialkey_mapping[details])
