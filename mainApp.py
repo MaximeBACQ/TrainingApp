@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QMainWindow, QPushButton, 
 import sys
 import winreg
 import json
+import os
 from inputsLogic import InputHandler
 
 
@@ -27,11 +28,19 @@ class MainWindow(QMainWindow):
 
         # Tab 2 widgets
         self.browseButton2 = self.findChild(QPushButton, 'browseButton2')
+        self.browseButton3 = self.findChild(QPushButton, 'browseButton3')
+        self.replayButton = self.findChild(QPushButton, "replayButton")
         self.filePathLineEdit2 = self.findChild(QLineEdit, 'filePathLineEdit2')
         self.appComboBox = self.findChild(QComboBox, 'appComboBox')
         self.appLabel = self.findChild(QLabel, 'replayLabel')
 
-        self.browseButton1.clicked.connect(self.open_file_search)
+        self.filePathLineEdit2.setReadOnly(True)
+
+
+
+        self.browseButton1.clicked.connect(lambda: self.open_file_search(self.filePathLineEdit1))
+        self.browseButton2.clicked.connect(lambda: self.open_file_search(self.filePathLineEdit2))
+        self.browseButton3.clicked.connect(self.open_app_search)
         self.captureButton.clicked.connect(self.capture_button_click)
         self.createFileButton.clicked.connect(self.create_new_file)
         self.emptyButton.clicked.connect(self.empty_file)
@@ -102,13 +111,21 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load JSON file:\n{str(e)}")
 
-    def open_file_search(self):
+    def open_app_search(self):
+        options = QFileDialog.Options()
+        filePath, _ = QFileDialog.getOpenFileName(self, "Select Application", "", "Executable Files (*.exe);", options=options)
+        if filePath:
+            app_name = os.path.basename(filePath)
+            self.appComboBox.addItem(app_name)
+            self.appComboBox.setCurrentText(app_name)
+
+    def open_file_search(self, line_edit):
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getOpenFileName(self, "Select File", "", "JSON Files (*.json);;All Files (*)", options=options)
         print(filePath)
         if filePath:
-            self.filePathLineEdit1.setText(filePath)
-            if not self.file_is_empty:
+            line_edit.setText(filePath)
+            if line_edit == self.filePathLineEdit1 and not self.file_is_empty():
                 self.displayJsonContent(filePath)
 
     def empty_file(self):
@@ -155,6 +172,10 @@ class MainWindow(QMainWindow):
                 continue
         print(apps)
         return apps
+    
+    def replay_inputs(self):
+        return
+    
 
 
 def main():
